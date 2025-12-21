@@ -40,6 +40,36 @@
             box-sizing: border-box;
         }
 
+        .password-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-container input {
+            width: 100%;
+            padding-right: 40px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            user-select: none;
+            opacity: 0.4;
+            display: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .toggle-password:hover {
+            opacity: 0.7;
+        }
+
+        .toggle-password.show {
+            display: block;
+        }
+
         button {
             margin-top: 15px;
             width: 100%;
@@ -99,7 +129,13 @@
         <input type="email" name="email" required>
 
         <label>Password</label>
-        <input type="password" name="password" required>
+        <div class="password-container">
+            <input type="password" name="password" id="password" required oninput="handlePasswordInput()">
+            <svg class="toggle-password" onclick="togglePassword()" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 5C7 5 2.73 8.11 1 12.5C2.73 16.89 7 20 12 20C17 20 21.27 16.89 23 12.5C21.27 8.11 17 5 12 5Z" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="12.5" r="3" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
 
         <button type="submit">Sign In</button>
     </form>
@@ -114,6 +150,29 @@
         Don't have an account? <a href="/register">Create one</a>
     </div>
 </div>
+
+<script>
+    function handlePasswordInput() {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.querySelector('.toggle-password');
+
+        if (passwordInput.value.length > 0) {
+            toggleIcon.classList.add('show');
+        } else {
+            toggleIcon.classList.remove('show');
+        }
+    }
+
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+        } else {
+            passwordInput.type = 'password';
+        }
+    }
+</script>
 
 </body>
 </html>
