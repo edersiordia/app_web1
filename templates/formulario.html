@@ -1,0 +1,88 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Form Validator</h2>
+
+    <form method="POST" action="/validate">
+        <label>Name</label>
+        <input type="text" name="name">
+
+        <label>Email</label>
+        <input type="text" name="email">
+
+        <label>Age</label>
+        <input type="text" name="age">
+
+        <button type="submit">Validate</button>
+    </form>
+
+    {% if message %}
+    <div class="message {{ status }}">
+        {{ message }}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .form-container {
+        max-width: 500px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .form-container h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    label {
+        display: block;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+
+    input {
+        width: 100%;
+        padding: 8px;
+        margin-top: 4px;
+    }
+
+    button {
+        margin-top: 15px;
+        width: 100%;
+        padding: 10px;
+        background: #007bff;
+        border: none;
+        color: white;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+    button:hover {
+        background: #0056b3;
+    }
+
+    .message {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .message.error {
+        background: #ffe0e0;
+        color: #900;
+    }
+
+    .message.success {
+        background: #e0ffe5;
+        color: #060;
+    }
+</style>
+{% endblock %}

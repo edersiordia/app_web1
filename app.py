@@ -4,7 +4,7 @@
 # - request: objeto para acceder a los datos enviados por el usuario
 # - session: para manejar sesiones de usuario
 # - redirect: para redirigir a otras rutas
-# - url_for: para generar URLs de forma dinámica
+# - url_for: para generar URLs de forma dinámica..
 from flask import Flask, render_template, request, session, redirect, url_for
 
 # Creamos una instancia de la aplicación Flask
@@ -108,6 +108,23 @@ def register():
     # GET request: mostrar página de registro
     return render_template("register.html")
 
+# Rutas del dashboard
+@app.route("/dashboard/formulario", methods=["GET"])
+def dashboard_formulario():
+    # Verificamos que el usuario esté logueado
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    # Renderizamos la página del formulario dentro del dashboard
+    return render_template("formulario.html", current_page='formulario')
+
+@app.route("/dashboard/preguntas", methods=["GET"])
+def dashboard_preguntas():
+    # Verificamos que el usuario esté logueado
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    # Renderizamos la página de preguntas inteligentes
+    return render_template("preguntas.html", current_page='preguntas')
+
 # Definimos la ruta principal "/" que solo acepta peticiones GET
 # Esta es la página de inicio que muestra el formulario vacío
 @app.route("/", methods=["GET"])
@@ -116,8 +133,8 @@ def home():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
 
-    # Renderiza y devuelve el archivo index.html de la carpeta templates
-    return render_template("index.html")
+    # Redirigimos al dashboard con el formulario
+    return redirect(url_for('dashboard_formulario'))
 
 # Definimos la ruta "/validate" que solo acepta peticiones POST
 # Esta ruta procesa los datos del formulario enviado
@@ -136,28 +153,32 @@ def validate():
 
     # VALIDACIÓN 1: Verificamos que el nombre no esté vacío
     if not name:
-        return render_template("index.html",
+        return render_template("formulario.html",
                                message="Name is required.",
-                               status="error")
+                               status="error",
+                               current_page='formulario')
 
     # VALIDACIÓN 2: Verificamos que el email tenga formato básico válido
     # Debe contener "@" y "." para considerarse válido
     if "@" not in email or "." not in email:
-        return render_template("index.html",
+        return render_template("formulario.html",
                                message="Invalid email format.",
-                               status="error")
+                               status="error",
+                               current_page='formulario')
 
     # VALIDACIÓN 3: Verificamos que la edad sea un número
     # .isdigit() devuelve True solo si todos los caracteres son dígitos
     if not age.isdigit():
-        return render_template("index.html",
+        return render_template("formulario.html",
                                message="Age must be a number.",
-                               status="error")
+                               status="error",
+                               current_page='formulario')
 
     # Si todas las validaciones pasan, mostramos mensaje de éxito
-    return render_template("index.html",
+    return render_template("formulario.html",
                            message="Form validated successfully!",
-                           status="success")
+                           status="success",
+                           current_page='formulario')
 
 # Ruta para cerrar sesión
 @app.route("/logout")
