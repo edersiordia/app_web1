@@ -9,8 +9,8 @@ app_web1/
     ├── login.html                  # Página de login
     ├── register.html              # Página de registro
     ├── dashboard.html             # Template base (sidebar + topbar)
-    ├── formulario.html            # Página del formulario (extiende dashboard)
-    └── preguntas.html             # Página de preguntas (extiende dashboard)
+    ├── consultar_datos.html       # Página para consultar datos (extiende dashboard)
+    └── modificar_datos.html       # Página para modificar datos (extiende dashboard)
 ```
 
 ---
@@ -24,7 +24,7 @@ app_web1/
 - Define un bloque `{% block content %}` para contenido dinámico
 - Todas las páginas del dashboard extienden este template
 
-**Templates Hijos:** `formulario.html`, `preguntas.html`
+**Templates Hijos:** `consultar_datos.html`, `modificar_datos.html`
 - Extienden `dashboard.html`
 - Sobrescriben el bloque `{% block content %}`
 - Heredan sidebar y topbar automáticamente
@@ -60,10 +60,10 @@ REQUISITOS:
 
 2. NAVEGACIÓN:
    - Items en sidebar:
-     * "Formulario" → /dashboard/formulario
-     * "Preguntas Inteligentes" → /dashboard/preguntas
+     * "Consultar Datos" → /dashboard/consultar-datos
+     * "Modificar Datos" → /dashboard/modificar-datos
    - Resalta item activo con clase .active
-   - Usa condicional Jinja2: {% if current_page == 'formulario' %}active{% endif %}
+   - Usa condicional Jinja2: {% if current_page == 'consultar-datos' %}active{% endif %}
 
 3. PÁGINA LOGIN (login.html):
    - Formulario centrado con campos: email y password
@@ -76,8 +76,8 @@ REQUISITOS:
    - Mensaje de error/éxito dinámico
 
 4. PÁGINAS DEL DASHBOARD:
-   - formulario.html: formulario de validación con campos name, email, age
-   - preguntas.html: página placeholder con mensaje "Coming soon"
+   - consultar_datos.html: página para consultar datos de clientes desde Firebase
+   - modificar_datos.html: página para modificar datos y agregar puntos manualmente
    - Ambas extienden dashboard.html
 
 5. ESTILOS:
@@ -90,10 +90,12 @@ REQUISITOS:
 6. BACKEND ROUTES:
    - /login (GET, POST)
    - /register (GET, POST)
-   - / → redirige a /dashboard/formulario
-   - /dashboard/formulario (GET) → render formulario.html con current_page='formulario'
-   - /dashboard/preguntas (GET) → render preguntas.html con current_page='preguntas'
-   - /validate (POST) → procesa formulario y regresa a formulario.html
+   - / → redirige a /dashboard/consultar-datos
+   - /dashboard/consultar-datos (GET, POST) → render consultar_datos.html con current_page='consultar-datos'
+   - /dashboard/modificar-datos (GET) → render modificar_datos.html con current_page='modificar-datos'
+   - /dashboard/verificar-email (POST) → verifica si un email existe en Firebase
+   - /dashboard/agregar-puntos (POST) → agrega puntos a un cliente
+   - /dashboard/descargar-csv (GET) → descarga datos de clientes en formato CSV
    - /logout → limpia sesión y redirige a login
 ```
 
@@ -108,7 +110,7 @@ Crea un template base dashboard.html para Flask con:
 - Sidebar fijo izquierdo (250px, background #2c3e50)
 - Top bar fijo superior (60px, background blanco)
 - Content area con margin-left: 250px y margin-top: 60px
-- Navegación con items "Formulario" y "Preguntas Inteligentes"
+- Navegación con items "Consultar Datos" y "Modificar Datos"
 - Resalta item activo usando {% if current_page == 'X' %}active{% endif %}
 - Botón de logout en parte inferior del sidebar
 - Muestra "Bosio Solutions" en topbar y {{ session.user_email }}
@@ -131,29 +133,6 @@ Crea login.html con:
 - Usa onclick="togglePassword()" para alternar visibilidad
 - Link a /register
 - Muestra mensaje de error/éxito si existe
-```
-
-### 3. Página de Formulario
-
-```
-Crea formulario.html que:
-- Extiende dashboard.html con {% extends "dashboard.html" %}
-- Sobrescribe {% block content %}
-- Contiene formulario con campos: name, email, age
-- POST a /validate
-- Muestra mensajes de error/éxito si existen
-- Contenedor centrado (max-width: 500px)
-- Background blanco con box-shadow
-```
-
-### 4. Página Placeholder
-
-```
-Crea preguntas.html que:
-- Extiende dashboard.html
-- Muestra título "Preguntas Inteligentes"
-- Texto: "This feature is coming soon..."
-- Contenedor centrado con estilos similares a formulario.html
 ```
 
 ---
@@ -273,37 +252,39 @@ function togglePassword() {
 
 ```python
 # Rutas del dashboard
-@app.route("/dashboard/formulario", methods=["GET"])
-def dashboard_formulario():
+@app.route("/dashboard/consultar-datos", methods=["GET", "POST"])
+def dashboard_consultar_datos():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-    return render_template("formulario.html", current_page='formulario')
+    # ... lógica para consultar Firebase ...
+    return render_template("consultar_datos.html",
+                         current_page='consultar-datos',
+                         datos=datos,
+                         error=error)
 
-@app.route("/dashboard/preguntas", methods=["GET"])
-def dashboard_preguntas():
+@app.route("/dashboard/modificar-datos", methods=["GET"])
+def dashboard_modificar_datos():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-    return render_template("preguntas.html", current_page='preguntas')
+    return render_template("modificar_datos.html", current_page='modificar-datos')
 
 # Ruta principal redirige al dashboard
 @app.route("/", methods=["GET"])
 def home():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-    return redirect(url_for('dashboard_formulario'))
+    return redirect(url_for('dashboard_consultar_datos'))
 
-# Validación de formulario
-@app.route("/validate", methods=["POST"])
-def validate():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
+# API endpoints para modificar datos
+@app.route("/dashboard/verificar-email", methods=["POST"])
+def verificar_email():
+    # ... lógica para verificar email en Firebase ...
+    return jsonify({'success': True, 'nombre': ..., 'puntos_actuales': ...})
 
-    # ... lógica de validación ...
-
-    return render_template("formulario.html",
-                         message="...",
-                         status="...",
-                         current_page='formulario')
+@app.route("/dashboard/agregar-puntos", methods=["POST"])
+def agregar_puntos():
+    # ... lógica para agregar puntos en Firebase ...
+    return jsonify({'success': True, 'message': ..., 'puntos_totales': ...})
 ```
 
 ---
@@ -315,15 +296,15 @@ def validate():
    → Redirige a /login (si no está logueado)
 
 2. Usuario completa login
-   → Redirige a /dashboard/formulario
+   → Redirige a /dashboard/consultar-datos
 
 3. Dashboard carga con:
-   - Sidebar con "Formulario" (activo) y "Preguntas Inteligentes"
+   - Sidebar con "Consultar Datos" (activo) y "Modificar Datos"
    - Top bar con "Bosio Solutions" y email del usuario
-   - Content area muestra formulario
+   - Content area muestra la página de consultar datos
 
-4. Usuario hace clic en "Preguntas Inteligentes"
-   → Navega a /dashboard/preguntas
+4. Usuario hace clic en "Modificar Datos"
+   → Navega a /dashboard/modificar-datos
    → Sidebar y topbar permanecen fijos
    → Solo content area cambia
 
@@ -428,10 +409,20 @@ def dashboard_nueva_pagina():
 
 3. **Agregar item en sidebar (dashboard.html):**
 ```html
-<a href="/dashboard/nueva_pagina"
-   class="nav-item {% if current_page == 'nueva_pagina' %}active{% endif %}">
-    Mi Nueva Página
-</a>
+<nav class="sidebar-nav">
+    <a href="/dashboard/consultar-datos"
+       class="nav-item {% if current_page == 'consultar-datos' %}active{% endif %}">
+        Consultar Datos
+    </a>
+    <a href="/dashboard/modificar-datos"
+       class="nav-item {% if current_page == 'modificar-datos' %}active{% endif %}">
+        Modificar Datos
+    </a>
+    <a href="/dashboard/nueva_pagina"
+       class="nav-item {% if current_page == 'nueva_pagina' %}active{% endif %}">
+        Mi Nueva Página
+    </a>
+</nav>
 ```
 
 ---
@@ -440,14 +431,15 @@ def dashboard_nueva_pagina():
 
 - [ ] Login muestra icono de ojo solo cuando hay texto en password
 - [ ] Icono de ojo alterna visibilidad de contraseña
-- [ ] Login exitoso redirige a dashboard con formulario
+- [ ] Login exitoso redirige a dashboard con consultar datos
 - [ ] Sidebar permanece fijo al hacer scroll
 - [ ] Top bar permanece fijo al hacer scroll
 - [ ] Solo content area tiene scroll
 - [ ] Navegación entre páginas resalta item activo
 - [ ] Email del usuario aparece en top bar
 - [ ] Logout redirige a login
-- [ ] Formulario valida correctamente
+- [ ] Consultar datos muestra información de Firebase correctamente
+- [ ] Modificar datos permite agregar puntos manualmente
 - [ ] Mensajes de error/éxito se muestran correctamente
 
 ---
@@ -462,6 +454,357 @@ def dashboard_nueva_pagina():
 
 ---
 
-Creado: 2025-12-20
+## Integración con Firebase (Nuevas Funcionalidades)
+
+### Estructura Firebase Realtime Database
+
+```
+/mi_shopify/puntos_clientes/
+    edersiordia_at_outlook_com/
+        email: "edersiordia@outlook.com"
+        nombre_inicial: "Eder"
+        puntos_totales: 1700
+        referido_por: "lic_payanmz_at_gmail_com"
+        historial_pedidos/
+            6543434547495/
+                Razon: "Puntos por referidos"
+                fecha_compra: "2025-05-02T20:23:01-07:00"
+                puntos_ganados: 1000
+                total_compra_mxn: 1000
+```
+
+**Nota:** Los emails en Firebase usan formato especial:
+- `@` → `_at_`
+- `.com` → `_com`
+- `.net` → `_net`
+- Ejemplo: `edersiordia@outlook.com` → `edersiordia_at_outlook_com`
+
+---
+
+## Página: Consultar Datos
+
+### Descripción
+Página para consultar y visualizar datos de clientes desde Firebase Realtime Database.
+
+### Archivo
+`templates/consultar_datos.html`
+
+### Funcionalidades
+
+1. **Consultar Todos los Datos**
+   - Botón que extrae todos los clientes de `/mi_shopify/puntos_clientes`
+   - Muestra datos en tabla HTML responsive
+
+2. **Tabla de Datos**
+   - Columnas: Email, Nombre, Puntos Totales, Referido por
+   - Ordenamiento automático por Puntos Totales (mayor a menor)
+   - Contador de total de registros
+   - Hover effect en filas
+
+3. **Descarga CSV**
+   - Botón "Descargar CSV" debajo de la tabla
+   - Descarga archivo `puntos_clientes.csv`
+   - Datos ordenados igual que la tabla
+   - Formato compatible con Excel
+
+4. **Conversión de Emails**
+   - Los emails en campo "Referido por" se convierten automáticamente
+   - De formato Firebase: `lic_payanmz_at_gmail_com`
+   - A formato normal: `lic_payanmz@gmail.com`
+   - Solo para visualización (no modifica Firebase)
+
+### Rutas Backend
+
+```python
+# Mostrar página y consultar datos
+@app.route("/dashboard/consultar-datos", methods=["GET", "POST"])
+def dashboard_consultar_datos():
+    # GET: Muestra página vacía
+    # POST: Consulta Firebase y muestra tabla
+
+# Descargar CSV
+@app.route("/dashboard/descargar-csv", methods=["GET"])
+def descargar_csv():
+    # Genera CSV en memoria y lo descarga
+```
+
+### Funciones Auxiliares
+
+```python
+def convertir_email_firebase(email_firebase):
+    """
+    Convierte emails de formato Firebase a formato normal
+    Ejemplo: lic_payanmz_at_gmail_com -> lic_payanmz@gmail.com
+    """
+```
+
+### Estilos Clave
+
+```css
+.btn-consultar {
+    background: #3498db;
+    color: white;
+    padding: 12px 30px;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead {
+    background: #2c3e50;
+    color: white;
+}
+
+.btn-download {
+    background: #27ae60;
+    color: white;
+}
+```
+
+---
+
+## Página: Modificar Datos
+
+### Descripción
+Página para modificar datos de clientes en Firebase, con funcionalidad para agregar puntos manualmente.
+
+### Archivo
+`templates/modificar_datos.html`
+
+### Funcionalidades
+
+1. **Agregar Puntos Manualmente**
+   - Botón principal que activa el formulario
+   - Flujo de 3 pasos progresivos
+
+2. **Step 1: Seleccionar Razón**
+   - Dropdown con 3 opciones:
+     - "Compra Manual"
+     - "Puntos Regalados"
+     - "Ingreso Manual"
+
+3. **Step 2: Verificar Email**
+   - Input para email del cliente (formato normal)
+   - Botón "Verificar" que busca en Firebase
+   - Si existe: Muestra nombre y puntos actuales
+   - Si no existe: Mensaje de error
+
+4. **Step 3: Agregar Monto**
+   - Input numérico para cantidad de puntos
+   - Muestra información del cliente
+   - Botón "Agregar Puntos" para confirmar
+
+5. **Actualización en Firebase**
+   - Crea registro en `historial_pedidos` con ID único
+   - Actualiza `puntos_totales` sumando los puntos nuevos
+   - Fecha con timezone de México (America/Mexico_City)
+
+### Rutas Backend
+
+```python
+# Mostrar página
+@app.route("/dashboard/modificar-datos", methods=["GET"])
+def dashboard_modificar_datos():
+    # Renderiza página principal
+
+# Verificar si email existe
+@app.route("/dashboard/verificar-email", methods=["POST"])
+def verificar_email():
+    # Busca email en Firebase
+    # Retorna JSON con success y datos del cliente
+
+# Agregar puntos
+@app.route("/dashboard/agregar-puntos", methods=["POST"])
+def agregar_puntos():
+    # Crea registro en historial_pedidos
+    # Actualiza puntos_totales
+    # Retorna JSON con success
+```
+
+### Funciones Auxiliares
+
+```python
+def convertir_email_a_firebase(email_normal):
+    """
+    Convierte email normal a formato Firebase
+    Ejemplo: lic_payanmz@gmail.com -> lic_payanmz_at_gmail_com
+    """
+
+def generar_id_pedido():
+    """
+    Genera ID único basado en timestamp (milisegundos)
+    Similar a IDs de Shopify
+    """
+```
+
+### Ejemplo de Registro Creado
+
+```json
+{
+    "6543446852789": {
+        "Razon": "Compra Manual",
+        "fecha_compra": "2026-01-04T20:39:58-07:00",
+        "puntos_ganados": 300,
+        "total_compra_mxn": 300
+    }
+}
+```
+
+### JavaScript (AJAX)
+
+```javascript
+// Verificar email (fetch POST)
+const response = await fetch('/dashboard/verificar-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email })
+});
+
+// Agregar puntos (fetch POST)
+const response = await fetch('/dashboard/agregar-puntos', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        email: emailSeleccionado,
+        razon: razonSeleccionada,
+        monto: monto
+    })
+});
+```
+
+### Estilos Clave
+
+```css
+.btn-accion {
+    background: #3498db;
+    padding: 15px 30px;
+}
+
+.form-section {
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+}
+
+.cliente-info {
+    background: #e8f5e9;
+    border-left: 4px solid #27ae60;
+}
+
+.btn-success {
+    background: #27ae60;
+}
+```
+
+---
+
+## Configuración Firebase
+
+### Archivo de Credenciales
+```
+credentials/firebase-credentials.json
+```
+
+### Inicialización en app.py
+
+```python
+import firebase_admin
+from firebase_admin import credentials, db
+
+# Inicializar Firebase
+cred_path = os.path.join(os.path.dirname(__file__), 'credentials', 'firebase-credentials.json')
+
+if not firebase_admin._apps and os.path.exists(cred_path):
+    cred = credentials.Certificate(cred_path)
+    firebase_admin.initialize_app(cred, {
+        'databaseURL': 'https://rastreador-gps2-default-rtdb.firebaseio.com'
+    })
+```
+
+### Dependencias
+
+```txt
+Flask==3.0.0
+gunicorn==21.2.0
+firebase-admin==6.4.0
+```
+
+### .gitignore
+
+```
+credentials/
+*.json
+__pycache__/
+venv_firebase/
+```
+
+---
+
+## Navegación Actualizada del Dashboard
+
+```
+Sidebar:
+1. Consultar Datos         → /dashboard/consultar-datos
+2. Modificar Datos         → /dashboard/modificar-datos
+3. Logout                  → /logout
+```
+
+---
+
+## Nuevas Dependencias Python
+
+```python
+from flask import Flask, render_template, request, session, redirect, url_for, make_response, jsonify
+import firebase_admin
+from firebase_admin import credentials, db
+import os
+import csv
+from io import StringIO
+import time
+from datetime import datetime
+import pytz
+```
+
+---
+
+## Testing Checklist Actualizado
+
+### Consultar Datos
+- [ ] Botón "Consultar Todos" extrae datos de Firebase
+- [ ] Tabla muestra datos ordenados por puntos (mayor a menor)
+- [ ] Emails en "Referido por" se muestran en formato normal
+- [ ] Botón "Descargar CSV" genera archivo correctamente
+- [ ] CSV contiene datos ordenados igual que la tabla
+- [ ] Contador de registros muestra número correcto
+
+### Modificar Datos
+- [ ] Botón "Agregar Puntos Manualmente" muestra formulario
+- [ ] Dropdown de razones funciona correctamente
+- [ ] Verificación de email encuentra clientes existentes
+- [ ] Error correcto cuando email no existe
+- [ ] Agregar puntos crea registro en historial_pedidos
+- [ ] puntos_totales se actualiza correctamente
+- [ ] Formulario se resetea después de agregar puntos
+- [ ] Enter funciona en inputs de email y monto
+
+---
+
+## Credenciales de Acceso (Testing)
+
+```
+Usuario: admin
+Contraseña: admin
+```
+
+---
+
+Actualizado: 2026-01-06
 Proyecto: Bosio Solutions Dashboard
-Framework: Flask + Jinja2
+Framework: Flask + Jinja2 + Firebase Realtime Database
+Puerto: 8000 (Gunicorn)
+
+## Cambios Recientes (2026-01-06)
+- Eliminadas páginas "Formulario" y "Preguntas Inteligentes"
+- Dashboard ahora solo contiene "Consultar Datos" y "Modificar Datos"
+- Redirección inicial apunta a /dashboard/consultar-datos

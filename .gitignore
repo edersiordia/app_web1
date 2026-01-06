@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+venv_firebase/
+
+# Firebase credentials
+credentials/
+*.json
+
+# Environment variables
+.env
+
+# Gunicorn
+gunicorn_config.py
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store

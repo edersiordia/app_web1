@@ -1,0 +1,174 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+<div class="consultar-container">
+    <h2>Consultar Datos de Clientes</h2>
+
+    <!-- Formulario con botón -->
+    <form method="POST" action="/dashboard/consultar-datos">
+        <button type="submit" class="btn-consultar">Consultar Todos</button>
+    </form>
+
+    <!-- Mensaje de error si existe -->
+    {% if error %}
+    <div class="message error">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Tabla de datos -->
+    {% if datos %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Nombre</th>
+                    <th>Puntos Totales</th>
+                    <th>Referido por</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in datos %}
+                <tr>
+                    <td>{{ item.email }}</td>
+                    <td>{{ item.nombre }}</td>
+                    <td>{{ item.puntos_totales }}</td>
+                    <td>{{ item.referido_por }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="table-info">
+            Total de registros: {{ datos|length }}
+        </div>
+        <div class="download-section">
+            <a href="/dashboard/descargar-csv" class="btn-download">Descargar CSV</a>
+        </div>
+    </div>
+    {% elif request.method == 'POST' and not error %}
+    <div class="message info">
+        No hay datos disponibles
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .consultar-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .consultar-container h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #333;
+    }
+
+    .btn-consultar {
+        display: block;
+        margin: 0 auto 30px;
+        padding: 12px 30px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    .btn-consultar:hover {
+        background: #2980b9;
+    }
+
+    .message {
+        margin: 20px 0;
+        padding: 15px;
+        border-radius: 4px;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    .message.error {
+        background: #ffe0e0;
+        color: #900;
+        border: 1px solid #fcc;
+    }
+
+    .message.info {
+        background: #e3f2fd;
+        color: #1565c0;
+        border: 1px solid #90caf9;
+    }
+
+    .table-container {
+        margin-top: 20px;
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .data-table thead {
+        background: #2c3e50;
+        color: white;
+    }
+
+    .data-table th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+    }
+
+    .data-table td {
+        padding: 12px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .data-table tbody tr:hover {
+        background: #f5f5f5;
+    }
+
+    .data-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .table-info {
+        margin-top: 15px;
+        text-align: right;
+        color: #666;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .download-section {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .btn-download {
+        display: inline-block;
+        padding: 12px 30px;
+        background: #27ae60;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: 600;
+        transition: background 0.2s ease;
+    }
+
+    .btn-download:hover {
+        background: #229954;
+    }
+</style>
+{% endblock %}

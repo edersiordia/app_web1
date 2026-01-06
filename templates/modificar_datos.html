@@ -1,0 +1,355 @@
+{% extends "dashboard.html" %}
+
+{% block content %}
+<div class="modificar-container">
+    <h2>Modificar Datos de Clientes</h2>
+
+    <div class="acciones-section">
+        <button id="btnAgregarPuntos" class="btn-accion">Agregar Puntos Manualmente</button>
+    </div>
+
+    <!-- Formulario de agregar puntos (oculto por defecto) -->
+    <div id="formAgregarPuntos" class="form-section" style="display: none;">
+        <h3>Agregar Puntos Manualmente</h3>
+
+        <!-- Step 1: Seleccionar razón -->
+        <div id="step1" class="form-step">
+            <label>Selecciona la razón:</label>
+            <select id="selectRazon" class="form-control">
+                <option value="">-- Selecciona una razón --</option>
+                <option value="Compra Manual">Compra Manual</option>
+                <option value="Puntos Regalados">Puntos Regalados</option>
+                <option value="Ingreso Manual">Ingreso Manual</option>
+            </select>
+        </div>
+
+        <!-- Step 2: Ingresar email -->
+        <div id="step2" class="form-step" style="display: none;">
+            <label>Correo electrónico del cliente:</label>
+            <input type="email" id="inputEmail" class="form-control" placeholder="ejemplo@correo.com">
+            <button id="btnVerificarEmail" class="btn-primary">Verificar</button>
+        </div>
+
+        <!-- Step 3: Ingresar monto -->
+        <div id="step3" class="form-step" style="display: none;">
+            <div class="cliente-info">
+                <p><strong>Cliente encontrado:</strong></p>
+                <p>Nombre: <span id="clienteNombre"></span></p>
+                <p>Puntos actuales: <span id="clientePuntos"></span></p>
+            </div>
+            <label>Monto de puntos a agregar:</label>
+            <input type="number" id="inputMonto" class="form-control" placeholder="Ej: 500" min="1">
+            <button id="btnAgregarPuntosConfirm" class="btn-success">Agregar Puntos</button>
+        </div>
+
+        <!-- Mensajes -->
+        <div id="mensajeResultado" class="message" style="display: none;"></div>
+
+        <!-- Botón cancelar -->
+        <button id="btnCancelar" class="btn-secondary">Cancelar</button>
+    </div>
+</div>
+
+<style>
+    .modificar-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .modificar-container h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #333;
+    }
+
+    .acciones-section {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .btn-accion {
+        padding: 15px 30px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    .btn-accion:hover {
+        background: #2980b9;
+    }
+
+    .form-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 4px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .form-section h3 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .form-step {
+        margin-bottom: 20px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .btn-primary, .btn-success, .btn-secondary {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        margin-right: 10px;
+    }
+
+    .btn-primary {
+        background: #3498db;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #2980b9;
+    }
+
+    .btn-success {
+        background: #27ae60;
+        color: white;
+    }
+
+    .btn-success:hover {
+        background: #229954;
+    }
+
+    .btn-secondary {
+        background: #95a5a6;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #7f8c8d;
+    }
+
+    .cliente-info {
+        background: #e8f5e9;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        border-left: 4px solid #27ae60;
+    }
+
+    .cliente-info p {
+        margin: 5px 0;
+    }
+
+    .message {
+        margin: 15px 0;
+        padding: 15px;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .message.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .message.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .message.info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+</style>
+
+<script>
+    // Variables globales
+    let razonSeleccionada = '';
+    let emailSeleccionado = '';
+
+    // Elementos del DOM
+    const btnAgregarPuntos = document.getElementById('btnAgregarPuntos');
+    const formAgregarPuntos = document.getElementById('formAgregarPuntos');
+    const selectRazon = document.getElementById('selectRazon');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const inputEmail = document.getElementById('inputEmail');
+    const btnVerificarEmail = document.getElementById('btnVerificarEmail');
+    const inputMonto = document.getElementById('inputMonto');
+    const btnAgregarPuntosConfirm = document.getElementById('btnAgregarPuntosConfirm');
+    const btnCancelar = document.getElementById('btnCancelar');
+    const mensajeResultado = document.getElementById('mensajeResultado');
+    const clienteNombre = document.getElementById('clienteNombre');
+    const clientePuntos = document.getElementById('clientePuntos');
+
+    // Mostrar formulario
+    btnAgregarPuntos.addEventListener('click', () => {
+        formAgregarPuntos.style.display = 'block';
+        resetFormulario();
+    });
+
+    // Cambio en select de razón
+    selectRazon.addEventListener('change', (e) => {
+        razonSeleccionada = e.target.value;
+        if (razonSeleccionada) {
+            step2.style.display = 'block';
+            inputEmail.focus();
+        } else {
+            step2.style.display = 'none';
+        }
+    });
+
+    // Verificar email
+    btnVerificarEmail.addEventListener('click', async () => {
+        const email = inputEmail.value.trim();
+
+        if (!email) {
+            mostrarMensaje('Por favor ingresa un correo electrónico', 'error');
+            return;
+        }
+
+        // Validar formato de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            mostrarMensaje('Por favor ingresa un correo electrónico válido', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch('/dashboard/verificar-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                emailSeleccionado = email;
+                clienteNombre.textContent = data.nombre;
+                clientePuntos.textContent = data.puntos_actuales;
+                step3.style.display = 'block';
+                inputMonto.focus();
+                ocultarMensaje();
+            } else {
+                mostrarMensaje(data.message, 'error');
+                step3.style.display = 'none';
+            }
+        } catch (error) {
+            mostrarMensaje('Error al verificar el correo: ' + error.message, 'error');
+        }
+    });
+
+    // Agregar puntos
+    btnAgregarPuntosConfirm.addEventListener('click', async () => {
+        const monto = parseInt(inputMonto.value);
+
+        if (!monto || monto <= 0) {
+            mostrarMensaje('Por favor ingresa un monto válido mayor a 0', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch('/dashboard/agregar-puntos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: emailSeleccionado,
+                    razon: razonSeleccionada,
+                    monto: monto
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                mostrarMensaje(data.message, 'success');
+                // Resetear formulario después de 3 segundos
+                setTimeout(() => {
+                    resetFormulario();
+                    formAgregarPuntos.style.display = 'none';
+                }, 3000);
+            } else {
+                mostrarMensaje(data.message, 'error');
+            }
+        } catch (error) {
+            mostrarMensaje('Error al agregar puntos: ' + error.message, 'error');
+        }
+    });
+
+    // Cancelar
+    btnCancelar.addEventListener('click', () => {
+        formAgregarPuntos.style.display = 'none';
+        resetFormulario();
+    });
+
+    // Enter key en input de email
+    inputEmail.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            btnVerificarEmail.click();
+        }
+    });
+
+    // Enter key en input de monto
+    inputMonto.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            btnAgregarPuntosConfirm.click();
+        }
+    });
+
+    // Funciones auxiliares
+    function resetFormulario() {
+        selectRazon.value = '';
+        inputEmail.value = '';
+        inputMonto.value = '';
+        razonSeleccionada = '';
+        emailSeleccionado = '';
+        step2.style.display = 'none';
+        step3.style.display = 'none';
+        ocultarMensaje();
+    }
+
+    function mostrarMensaje(mensaje, tipo) {
+        mensajeResultado.textContent = mensaje;
+        mensajeResultado.className = 'message ' + tipo;
+        mensajeResultado.style.display = 'block';
+    }
+
+    function ocultarMensaje() {
+        mensajeResultado.style.display = 'none';
+    }
+</script>
+{% endblock %}
