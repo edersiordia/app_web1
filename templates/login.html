@@ -2,42 +2,134 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login - Form Validator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - BPMercado Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Efecto de puntos de fondo */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.03) 1px, transparent 0);
+            background-size: 40px 40px;
+            pointer-events: none;
         }
 
         .container {
-            background: white;
-            padding: 20px 30px;
-            border-radius: 8px;
-            width: 320px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background: rgba(20, 20, 30, 0.85);
+            backdrop-filter: blur(20px);
+            padding: 50px 45px;
+            border-radius: 24px;
+            width: 440px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5),
+                        0 0 0 1px rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 1;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff 0%, #00ff88 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .logo p {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 400;
+            letter-spacing: 0.5px;
         }
 
         h2 {
             text-align: center;
-            margin-bottom: 15px;
-            color: #333;
+            margin-bottom: 35px;
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
         }
 
         label {
             display: block;
-            margin-top: 10px;
-            font-weight: bold;
+            margin-bottom: 10px;
+            font-weight: 500;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.85);
+            letter-spacing: 0.2px;
         }
 
         input {
             width: 100%;
-            padding: 8px;
-            margin-top: 4px;
-            box-sizing: border-box;
+            padding: 16px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        input:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #00d4ff;
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        input:hover:not(:focus) {
+            border-color: rgba(255, 255, 255, 0.2);
         }
 
         .password-container {
@@ -46,98 +138,166 @@
         }
 
         .password-container input {
-            width: 100%;
-            padding-right: 40px;
+            padding-right: 50px;
         }
 
         .toggle-password {
             position: absolute;
-            right: 10px;
+            right: 16px;
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
             user-select: none;
-            opacity: 0.4;
+            opacity: 0;
             display: none;
             transition: opacity 0.2s ease;
         }
 
         .toggle-password:hover {
-            opacity: 0.7;
+            opacity: 1 !important;
         }
 
         .toggle-password.show {
             display: block;
+            opacity: 0.5;
         }
 
         button {
-            margin-top: 15px;
+            margin-top: 30px;
             width: 100%;
-            padding: 10px;
-            background: #007bff;
+            padding: 16px;
+            background: linear-gradient(135deg, #00d4ff 0%, #00ff88 100%);
             border: none;
-            color: white;
+            color: #0a0a0a;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 12px;
             font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0, 212, 255, 0.25);
         }
 
         button:hover {
-            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(0, 212, 255, 0.35);
+        }
+
+        button:active {
+            transform: translateY(0);
         }
 
         .message {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 4px;
+            margin-top: 20px;
+            padding: 14px 18px;
+            border-radius: 10px;
             font-size: 14px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .error {
-            background: #ffe0e0;
-            color: #900;
+            background: rgba(255, 70, 70, 0.15);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 70, 70, 0.3);
         }
 
         .success {
-            background: #e0ffe5;
-            color: #060;
+            background: rgba(0, 255, 136, 0.15);
+            color: #00ff88;
+            border: 1px solid rgba(0, 255, 136, 0.3);
         }
 
         .register-link {
-            margin-top: 15px;
+            margin-top: 30px;
             text-align: center;
             font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
         }
 
         .register-link a {
-            color: #007bff;
+            color: #00d4ff;
             text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            position: relative;
         }
 
         .register-link a:hover {
-            text-decoration: underline;
+            color: #00ff88;
+        }
+
+        .register-link a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -3px;
+            left: 0;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            transition: width 0.3s ease;
+        }
+
+        .register-link a:hover::after {
+            width: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .container {
+                width: 90%;
+                padding: 40px 30px;
+            }
+
+            .logo h1 {
+                font-size: 28px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Login</h2>
+    <div class="logo">
+        <h1>BPMercado Admin</h1>
+        <p>Sistema de Administración</p>
+    </div>
+
+    <h2>Iniciar Sesión</h2>
 
     <form method="POST" action="/login">
-        <label>Email</label>
-        <input type="email" name="email" required>
-
-        <label>Password</label>
-        <div class="password-container">
-            <input type="password" name="password" id="password" required oninput="handlePasswordInput()">
-            <svg class="toggle-password" onclick="togglePassword()" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 5C7 5 2.73 8.11 1 12.5C2.73 16.89 7 20 12 20C17 20 21.27 16.89 23 12.5C21.27 8.11 17 5 12 5Z" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <circle cx="12" cy="12.5" r="3" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+        <div class="input-group">
+            <label>Email</label>
+            <input type="email" name="email" placeholder="tu@email.com" required>
         </div>
 
-        <button type="submit">Iniciar</button>
+        <div class="input-group">
+            <label>Contraseña</label>
+            <div class="password-container">
+                <input type="password" name="password" id="password" placeholder="••••••••" required oninput="handlePasswordInput()">
+                <svg class="toggle-password" onclick="togglePassword()" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 5C7 5 2.73 8.11 1 12.5C2.73 16.89 7 20 12 20C17 20 21.27 16.89 23 12.5C21.27 8.11 17 5 12 5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="12.5" r="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+
+        <button type="submit">Iniciar Sesión</button>
     </form>
 
     {% if message %}
@@ -147,7 +307,7 @@
     {% endif %}
 
     <div class="register-link">
-        No tienes cuenta? <a href="/register">Crear una</a>
+        ¿No tienes cuenta? <a href="/register">Crear una</a>
     </div>
 </div>
 
